@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pac-Entidade: Salve do Obsessor - Terreiro Boiadeiro Querêncio</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+        body {
+            background-color: #080d1a;
+            color: #f3f4f6;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            touch-action: manipulation;
+        }
+
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+            background: #111827;
+            padding: 8px 12px;
+            border-radius: 10px;
+            border: 2px solid #d4af37;
+            width: 100%;
+            max-width: 380px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .header-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+            object-fit: cover;
+        }
+        h1 { color: #d4af37; margin: 0; font-size: 0.85rem; text-transform: uppercase; }
+        p.subtitle { color: #10b981; font-size: 0.65rem; margin: 2px 0 0 0; font-weight: bold; }
+
+        .btn-audio {
+            background: #1f2937;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .game-panel {
+            background: #111827;
+            border: 2px solid #d4af37;
+            border-radius: 12px;
+            padding: 10px;
+            max-width: 380px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.7);
+            position: relative;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: #d4af37;
+            background: #1f2937;
+            padding: 6px 10px;
+            border-radius: 6px;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 340px;
+            height: 340px;
+        }
+
+        canvas {
+            border: 2px solid #374151;
+            background: #050811;
+            border-radius: 6px;
+            display: block;
+        }
+
+        /* Controles Virtuais */
+        .controls-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            width: 100%;
+            max-width: 220px;
+            margin-top: 10px;
+        }
+        .ctrl-btn {
+            background: #1f2937;
+            border: 1px solid #d4af37;
+            color: #d4af37;
+            padding: 12px 0;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .ctrl-btn:active {
+            background: #d4af37;
+            color: #080d1a;
+        }
+
+        .btn-action {
+            background: #10b981;
+            color: #0b131f;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            width: 100%;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .entity-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 6px;
+            width: 100%;
+            margin: 8px 0;
+            max-height: 210px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .entity-option {
+            background: #1f2937;
+            border: 2px solid #374151;
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .entity-option img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #d4af37;
+            flex-shrink: 0;
+        }
+        .entity-option span {
+            font-size: 0.72rem;
+            font-weight: bold;
+            color: #f3f4f6;
+            text-align: left;
+        }
+        .entity-option.selected {
+            border-color: #d4af37;
+            background: #2b374a;
+        }
+
+        .overlay-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(8, 13, 26, 0.97);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            text-align: center;
+            padding: 16px;
+            border-radius: 12px;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="header-left">
+            <img src="https://i.ibb.co/60wpJ3xG/Logo-terreiro.jpg" class="header-logo" alt="Logo">
+            <div>
+                <h1>Pac-Entidade</h1>
+                <p class="subtitle">Salve do Obsessor</p>
+            </div>
+        </div>
+        <button class="btn-audio" id="audioToggleBtn" onclick="toggleAudio()">🔊 Som</button>
+    </div>
+
+    <div class="game-panel">
+        
+        <!-- TELA DE SELEÇÃO -->
+        <div id="startScreen" class="overlay-screen">
+            <h2 style="color: #d4af37; margin: 0; font-size: 0.95rem;">Escolha quem Você vai Guiar</h2>
+            <p style="font-size: 0.68rem; color: #9ca3af; margin: 4px 0 8px 0;">Sua entidade recolherá as sementes de luz e fugirá dos kiumbas!</p>
+            
+            <div class="entity-grid" id="entityGrid"></div>
+
+            <button class="btn-action" onclick="initGame()">Iniciar Caminhada</button>
+        </div>
+
+        <!-- TELA DE TRANSIÇÃO DE FASE -->
+        <div id="levelScreen" class="overlay-screen hidden">
+            <h2 style="color: #10b981; margin: 0; font-size: 1.2rem;">Fase Concluída! 🎉</h2>
+            <p id="levelMsgText" style="font-size: 0.85rem; color: #f3f4f6; margin: 12px 0;"></p>
+            <button class="btn-action" onclick="startNextLevel()">Avançar para Próxima Fase ➔</button>
+        </div>
+
+        <!-- TELA DE GAME OVER -->
+        <div id="gameOverScreen" class="overlay-screen hidden">
+            <h2 id="gameOverTitle" style="margin: 0; font-size: 1.2rem;"></h2>
+            <p id="finalScoreText" style="font-size: 0.85rem; margin: 12px 0;"></p>
+            <button class="btn-action" onclick="resetToMenu()">Escolher outra Entidade</button>
+        </div>
+
+        <div class="stats-bar">
+            <span>Guia: <strong id="currentEntityName" style="color:#10b981;">-</strong></span>
+            <span>Fase: <strong id="levelText" style="color:#a855f7;">1/3</strong></span>
+            <span>Pts: <strong id="score" style="color:#fff;">0</strong></span>
+            <span>Velas: <span id="livesText">🕯️🕯️🕯️</span></span>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="340" height="340"></canvas>
+        </div>
+
+        <!-- D-PAD VIRTUAL PARA CELULAR -->
+        <div class="controls-container">
+            <div></div>
+            <button class="ctrl-btn" onclick="setNextDir(0, -1)">▲</button>
+            <div></div>
+            <button class="ctrl-btn" onclick="setNextDir(-1, 0)">◄</button>
+            <button class="ctrl-btn" onclick="setNextDir(0, 1)">▼</button>
+            <button class="ctrl-btn" onclick="setNextDir(1, 0)">►</button>
+        </div>
+    </div>
+
+    <script>
+        // LISTA DE ENTIDADES EM ORDEM ALFABÉTICA
+        const entitiesList = [
+            { name: "Baianas", img: "https://i.ibb.co/whgzzmyQ/baianas.jpg" },
+            { name: "Baianos", img: "https://i.ibb.co/FbKVVDNH/baianos.jpg" },
+            { name: "Boiadeira", img: "https://i.ibb.co/HfY97m1Q/boiadeira.jpg" },
+            { name: "Boiadeiro", img: "https://i.ibb.co/5gLgyczK/boiadeiro.jpg" },
+            { name: "Cabocla", img: "https://i.ibb.co/qYtp3mh7/cabloca.jpg" },
+            { name: "Caboclo", img: "https://i.ibb.co/6RdKhHD0/caboclo.jpg" },
+            { name: "Cangaceira", img: "https://i.ibb.co/dsW4Tqq6/cangaceira.jpg" },
+            { name: "Cangaceiro", img: "https://i.ibb.co/zHPmRYV5/cangaceiro.jpg" },
+            { name: "Cigana", img: "https://i.ibb.co/Sw3KpbGY/cigana.jpg" },
+            { name: "Cigano", img: "https://i.ibb.co/6RdGXtz2/cigano.png" },
+            { name: "Curumim", img: "https://i.ibb.co/XfLKzfQd/curumim.jpg" },
+            { name: "Erê Menina", img: "https://i.ibb.co/1DK8P50/menina.jpg" },
+            { name: "Erê Menino", img: "https://i.ibb.co/JjMSgpVS/menino.jpg" },
+            { name: "Exu", img: "https://i.ibb.co/JfqpCFL/exu.jpg" },
+            { name: "Exu Mirim", img: "https://i.ibb.co/zTRw2nx4/exu-mirim.jpg" },
+            { name: "Maria Navalha", img: "https://i.ibb.co/nMd6MMHZ/malandra.jpg" },
+            { name: "Marinheiros", img: "https://i.ibb.co/Xxz6w90k/marinheiro.png" },
+            { name: "Oriente", img: "https://i.ibb.co/FLgvpKB3/oriente.jpg" },
+            { name: "Piratas", img: "https://i.ibb.co/fzqdSF1G/pirata.png" },
+            { name: "Pombo Gira", img: "https://i.ibb.co/LXzgCM58/pombo-gira.jpg" },
+            { name: "Preta Velha", img: "https://i.ibb.co/sd9BPvWv/preta-velha.jpg" },
+            { name: "Preto Velho", img: "https://i.ibb.co/k6GfJWrY/preto-velho.jpg" },
+            { name: "Zé Pilintra", img: "https://i.ibb.co/chHZZYW1/ze-pilintra.jpg" }
+        ];
+
+        let selectedIndex = 0;
+        const loadedImages = {};
+
+        function renderEntityGrid() {
+            const grid = document.getElementById('entityGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            entitiesList.forEach((ent, index) => {
+                const div = document.createElement('div');
+                div.className = `entity-option ${index === selectedIndex ? 'selected' : ''}`;
+                div.innerHTML = `<img src="${ent.img}"><span>${ent.name}</span>`;
+                div.onclick = () => {
+                    document.querySelectorAll('.entity-option').forEach(el => el.classList.remove('selected'));
+                    div.classList.add('selected');
+                    selectedIndex = index;
+                };
+                grid.appendChild(div);
+            });
+        }
+
+        function preloadImages() {
+            entitiesList.forEach((ent, idx) => {
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = ent.img;
+                loadedImages[idx] = img;
+            });
+        }
+
+        // MOTOR DE ÁUDIO WEB SINTETIZADO
+        let audioCtx = null;
+        let audioMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function toggleAudio() {
+            audioMuted = !audioMuted;
+            document.getElementById('audioToggleBtn').innerHTML = audioMuted ? '🔇 Mudo' : '🔊 Som';
+        }
+
+        function playSound(type) {
+            if (audioMuted || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'eat') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'power') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(600, now + 0.2);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
+            } else if (type === 'ghost') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(200, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'die') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(350, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.5);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        // TABULEIRO E CONFIGURAÇÕES
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const GRID_SIZE = 17;
+        const CELL_SIZE = 20;
+
+        const baseMap = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,3,2,2,2,2,2,2,1,2,2,2,2,2,2,3,1],
+            [1,2,1,1,2,1,1,2,1,2,1,1,2,1,1,2,1],
+            [1,2,1,1,2,1,1,2,1,2,1,1,2,1,1,2,1],
+            [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+            [1,2,1,1,2,1,2,1,1,1,2,1,2,1,1,2,1],
+            [1,2,2,2,2,1,2,2,1,2,2,1,2,2,2,2,1],
+            [1,1,1,1,2,1,1,0,0,0,1,1,2,1,1,1,1],
+            [1,0,0,1,2,1,0,0,0,0,0,1,2,1,0,0,1],
+            [1,1,1,1,2,1,0,1,0,1,0,1,2,1,1,1,1],
+            [1,2,2,2,2,0,0,1,0,1,0,0,2,2,2,2,1],
+            [1,2,1,1,2,1,2,1,1,1,2,1,2,1,1,2,1],
+            [1,2,2,1,2,2,2,2,0,2,2,2,2,1,2,2,1],
+            [1,1,2,1,2,1,2,1,1,1,2,1,2,1,2,1,1],
+            [1,2,2,2,2,1,2,2,1,2,2,1,2,2,2,2,1],
+            [1,3,1,1,1,1,1,2,1,2,1,1,1,1,1,3,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        let map = [];
+        let score = 0;
+        let lives = 3;
+        let currentLevel = 1;
+        let totalSeeds = 0;
+        let collectedSeeds = 0;
+        let gameActive = false;
+        let powerTimer = null;
+        let powerTimeLeft = 0;
+
+        const levelSettings = {
+            1: { ghostSpeedRatio: 0.05, powerDuration: 8000, name: "1 - O Início da Caminhada" },
+            2: { ghostSpeedRatio: 0.075, powerDuration: 6000, name: "2 - Firmeza no Terreiro" },
+            3: { ghostSpeedRatio: 0.1, powerDuration: 4500, name: "3 - Desafio de Aruanda" }
+        };
+
+        const player = {
+            x: 8, y: 12,
+            px: 8 * 20, py: 12 * 20,
+            dirX: 0, dirY: 0,
+            nextDirX: 0, nextDirY: 0,
+            speed: 2
+        };
+
+        const ghosts = [
+            { x: 7, y: 8, px: 7 * 20, py: 8 * 20, dirX: 1, dirY: 0, color: '#ef4444', isScared: false },
+            { x: 9, y: 8, px: 9 * 20, py: 8 * 20, dirX: -1, dirY: 0, color: '#ec4899', isScared: false },
+            { x: 8, y: 7, px: 8 * 20, py: 7 * 20, dirX: 0, dirY: -1, color: '#3b82f6', isScared: false }
+        ];
+
+        function setNextDir(dx, dy) {
+            initAudio();
+            player.nextDirX = dx;
+            player.nextDirY = dy;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            initAudio();
+            if (e.key === 'ArrowUp' || e.key === 'w') setNextDir(0, -1);
+            if (e.key === 'ArrowDown' || e.key === 's') setNextDir(0, 1);
+            if (e.key === 'ArrowLeft' || e.key === 'a') setNextDir(-1, 0);
+            if (e.key === 'ArrowRight' || e.key === 'd') setNextDir(1, 0);
+        });
+
+        function isWall(gx, gy) {
+            if (gx < 0 || gx >= GRID_SIZE || gy < 0 || gy >= GRID_SIZE) return true;
+            return map[gy][gx] === 1;
+        }
+
+        function initMap() {
+            totalSeeds = 0;
+            collectedSeeds = 0;
+            map = JSON.parse(JSON.stringify(baseMap));
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    if (map[r][c] === 2 || map[r][c] === 3) totalSeeds++;
+                }
+            }
+        }
+
+        function resetPositions() {
+            player.x = 8; player.y = 12;
+            player.px = player.x * CELL_SIZE; player.py = player.y * CELL_SIZE;
+            player.dirX = 0; player.dirY = 0;
+            player.nextDirX = 0; player.nextDirY = 0;
+
+            ghosts[0].x = 7; ghosts[0].y = 8; ghosts[0].px = 7 * CELL_SIZE; ghosts[0].py = 8 * CELL_SIZE; ghosts[0].dirX = 1; ghosts[0].dirY = 0;
+            ghosts[1].x = 9; ghosts[1].y = 8; ghosts[1].px = 9 * CELL_SIZE; ghosts[1].py = 8 * CELL_SIZE; ghosts[1].dirX = -1; ghosts[1].dirY = 0;
+            ghosts[2].x = 8; ghosts[2].y = 7; ghosts[2].px = 8 * CELL_SIZE; ghosts[2].py = 7 * CELL_SIZE; ghosts[2].dirX = 0; ghosts[2].dirY = -1;
+
+            ghosts.forEach(g => g.isScared = false);
+        }
+
+        function initGame() {
+            initAudio();
+            score = 0;
+            lives = 3;
+            currentLevel = 1;
+            initMap();
+            resetPositions();
+
+            document.getElementById('currentEntityName').innerText = entitiesList[selectedIndex].name;
+            updateUI();
+            
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('levelScreen').classList.add('hidden');
+
+            gameActive = true;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startNextLevel() {
+            initAudio();
+            currentLevel++;
+            initMap();
+            resetPositions();
+            updateUI();
+
+            document.getElementById('levelScreen').classList.add('hidden');
+            gameActive = true;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = score;
+            document.getElementById('levelText').innerText = `${currentLevel}/3`;
+            document.getElementById('livesText').innerText = '🕯️'.repeat(Math.max(0, lives));
+        }
+
+        function activateErvaPower() {
+            playSound('power');
+            const duration = levelSettings[currentLevel].powerDuration;
+            ghosts.forEach(g => g.isScared = true);
+            powerTimeLeft = duration;
+
+            if (powerTimer) clearInterval(powerTimer);
+            powerTimer = setInterval(() => {
+                powerTimeLeft -= 500;
+                if (powerTimeLeft <= 0) {
+                    clearInterval(powerTimer);
+                    ghosts.forEach(g => g.isScared = false);
+                }
+            }, 500);
+        }
+
+        function updatePlayer() {
+            if (player.px % CELL_SIZE === 0 && player.py % CELL_SIZE === 0) {
+                const currentGX = Math.round(player.px / CELL_SIZE);
+                const currentGY = Math.round(player.py / CELL_SIZE);
+
+                if (map[currentGY][currentGX] === 2) {
+                    map[currentGY][currentGX] = 0;
+                    score += 10;
+                    collectedSeeds++;
+                    playSound('eat');
+                    updateUI();
+                } else if (map[currentGY][currentGX] === 3) {
+                    map[currentGY][currentGX] = 0;
+                    score += 50;
+                    collectedSeeds++;
+                    activateErvaPower();
+                    updateUI();
+                }
+
+                if (collectedSeeds >= totalSeeds) {
+                    gameActive = false;
+                    if (currentLevel < 3) {
+                        document.getElementById('levelMsgText').innerHTML = `Sua entidade acumulou luz e limpou o terreiro!<br><br><strong>Próximo Nível:</strong> ${levelSettings[currentLevel + 1].name}`;
+                        document.getElementById('levelScreen').classList.remove('hidden');
+                    } else {
+                        document.getElementById('gameOverTitle').innerText = "Aruanda em Festa! 🏆";
+                        document.getElementById('gameOverTitle').style.color = "#10b981";
+                        document.getElementById('finalScoreText').innerHTML = `Você completou todas as 3 fases com a linha de <strong>${entitiesList[selectedIndex].name}</strong>!<br>Pontuação Final: <strong>${score}</strong>`;
+                        document.getElementById('gameOverScreen').classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                if (player.nextDirX !== 0 || player.nextDirY !== 0) {
+                    if (!isWall(currentGX + player.nextDirX, currentGY + player.nextDirY)) {
+                        player.dirX = player.nextDirX;
+                        player.dirY = player.nextDirY;
+                    }
+                }
+
+                if (isWall(currentGX + player.dirX, currentGY + player.dirY)) {
+                    player.dirX = 0;
+                    player.dirY = 0;
+                }
+            }
+
+            player.px += player.dirX * player.speed;
+            player.py += player.dirY * player.speed;
+        }
+
+        // RECONSTRUÇÃO COMPLETA DA LÓGICA DOS FANTASMAS (MANTÉM ELES 100% DENTRO DO TABULEIRO)
+        function updateGhosts() {
+            const speedRatio = levelSettings[currentLevel].ghostSpeedRatio;
+            const ghostSpeed = player.speed * speedRatio * 10;
+
+            ghosts.forEach(g => {
+                // Checa se alcançou exatamente uma casa na grade
+                const isAlignedX = Math.abs(g.px % CELL_SIZE) < 0.1 || Math.abs((g.px % CELL_SIZE) - CELL_SIZE) < 0.1;
+                const isAlignedY = Math.abs(g.py % CELL_SIZE) < 0.1 || Math.abs((g.py % CELL_SIZE) - CELL_SIZE) < 0.1;
+
+                if (isAlignedX && isAlignedY) {
+                    // Normaliza as posições exatas na grade
+                    g.px = Math.round(g.px / CELL_SIZE) * CELL_SIZE;
+                    g.py = Math.round(g.py / CELL_SIZE) * CELL_SIZE;
+
+                    const gx = Math.round(g.px / CELL_SIZE);
+                    const gy = Math.round(g.py / CELL_SIZE);
+
+                    const dirs = [{x: 0, y: -1}, {x: 0, y: 1}, {x: -1, y: 0}, {x: 1, y: 0}];
+                    const validMoves = [];
+
+                    dirs.forEach(d => {
+                        // Não pode dar meia-volta imediata se houver outro caminho
+                        if (d.x !== -g.dirX || d.y !== -g.dirY) {
+                            if (!isWall(gx + d.x, gy + d.y)) {
+                                validMoves.push(d);
+                            }
+                        }
+                    });
+
+                    // Se for um beco sem saída, aceita dar meia-volta
+                    if (validMoves.length === 0) {
+                        if (!isWall(gx - g.dirX, gy - g.dirY)) {
+                            validMoves.push({x: -g.dirX, y: -g.dirY});
+                        }
+                    }
+
+                    if (validMoves.length > 0) {
+                        const chosen = validMoves[Math.floor(Math.random() * validMoves.length)];
+                        g.dirX = chosen.x;
+                        g.dirY = chosen.y;
+                    }
+                }
+
+                // Aplica o movimento
+                const currentMoveSpeed = g.isScared ? ghostSpeed * 0.5 : ghostSpeed;
+                g.px += g.dirX * currentMoveSpeed;
+                g.py += g.dirY * currentMoveSpeed;
+
+                // TRAVA DE SEGURANÇA MÁXIMA: Impede sair das bordas do Canvas
+                g.px = Math.max(CELL_SIZE, Math.min(g.px, (GRID_SIZE - 2) * CELL_SIZE));
+                g.py = Math.max(CELL_SIZE, Math.min(g.py, (GRID_SIZE - 2) * CELL_SIZE));
+            });
+        }
+
+        function checkCollisions() {
+            ghosts.forEach(g => {
+                const dist = Math.hypot(player.px - g.px, player.py - g.py);
+                if (dist < CELL_SIZE * 0.75) {
+                    if (g.isScared) {
+                        playSound('ghost');
+                        score += 200;
+                        g.x = 8; g.y = 8;
+                        g.px = g.x * CELL_SIZE; g.py = g.y * CELL_SIZE;
+                        g.isScared = false;
+                        updateUI();
+                    } else {
+                        playSound('die');
+                        lives--;
+                        updateUI();
+                        if (lives <= 0) {
+                            gameActive = false;
+                            document.getElementById('gameOverTitle').innerText = "A Vela Apagou!";
+                            document.getElementById('gameOverTitle').style.color = "#ef4444";
+                            document.getElementById('finalScoreText').innerHTML = `Na fase ${currentLevel}, o obsessor alcançou o médium.<br>Pontuação: <strong>${score}</strong>`;
+                            document.getElementById('gameOverScreen').classList.remove('hidden');
+                        } else {
+                            resetPositions();
+                        }
+                    }
+                }
+            });
+        }
+
+        function drawMap() {
+            ctx.fillStyle = '#050811';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            for (let r = 0; r < GRID_SIZE; r++) {
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    const x = c * CELL_SIZE;
+                    const y = r * CELL_SIZE;
+
+                    if (map[r][c] === 1) {
+                        ctx.fillStyle = '#1e3a8a';
+                        ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+                        ctx.strokeStyle = '#3b82f6';
+                        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+                    } else if (map[r][c] === 2) {
+                        ctx.fillStyle = '#f59e0b';
+                        ctx.beginPath();
+                        ctx.arc(x + CELL_SIZE/2, y + CELL_SIZE/2, 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else if (map[r][c] === 3) {
+                        ctx.fillStyle = '#10b981';
+                        ctx.beginPath();
+                        ctx.arc(x + CELL_SIZE/2, y + CELL_SIZE/2, 6, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        function drawEntities() {
+            const img = loadedImages[selectedIndex];
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(player.px + CELL_SIZE/2, player.py + CELL_SIZE/2, CELL_SIZE/2, 0, Math.PI * 2);
+            ctx.clip();
+
+            if (img && img.complete) {
+                ctx.drawImage(img, player.px, player.py, CELL_SIZE, CELL_SIZE);
+            } else {
+                ctx.fillStyle = '#d4af37';
+                ctx.fill();
+            }
+            ctx.restore();
+
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.arc(player.px + CELL_SIZE/2, player.py + CELL_SIZE/2, CELL_SIZE/2, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ghosts.forEach(g => {
+                ctx.fillStyle = g.isScared ? '#3b82f6' : g.color;
+                ctx.beginPath();
+                ctx.arc(g.px + CELL_SIZE/2, g.py + CELL_SIZE/2 - 2, CELL_SIZE/2 - 1, Math.PI, 0, false);
+                ctx.lineTo(g.px + CELL_SIZE - 1, g.py + CELL_SIZE);
+                ctx.lineTo(g.px + 1, g.py + CELL_SIZE);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(g.px + 6, g.py + 6, 2.5, 0, Math.PI * 2);
+                ctx.arc(g.px + 14, g.py + 6, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(g.px + 6, g.py + 6, 1, 0, Math.PI * 2);
+                ctx.arc(g.px + 14, g.py + 6, 1, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+            updatePlayer();
+            updateGhosts();
+            checkCollisions();
+
+            drawMap();
+            drawEntities();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function resetToMenu() {
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('levelScreen').classList.add('hidden');
+            document.getElementById('startScreen').classList.remove('hidden');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderEntityGrid();
+            preloadImages();
+        });
+        renderEntityGrid();
+        preloadImages();
+    </script>
+</body>
+</html>
